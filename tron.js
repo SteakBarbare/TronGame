@@ -345,6 +345,88 @@ class Bot {
     let points = 0;
     let bestPoints = -1;
 
+    let matrix = [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8,
+      8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 9, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+      7, 7, 7, 9, 0, 0, 9, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 0,
+      0, 9, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9, 0, 0, 9, 4, 4, 4,
+      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 9, 0, 0, 9, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 9, 0, 0, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 9, 0, 0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0,
+      0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0, 0, 9, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 0, 0, 9, 3, 3, 3, 3, 3, 3, 3, 3,
+      3, 3, 3, 3, 3, 3, 3, 3, 9, 0, 0, 9, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+      4, 4, 4, 9, 0, 0, 9, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9, 0,
+      0, 9, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 0, 0, 9, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8,
+      8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+      9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
+
+    for (currentMove; currentMove < legalMoves.length; currentMove++) {
+      if (legalMoves[currentMove].collision == false) {
+        safeMoves.push(legalMoves[currentMove]);
+      }
+    }
+
+    for (currentMove = 0; currentMove < safeMoves.length; currentMove++) {
+      points =
+        arena.getAvailableTilesNumber(
+          safeMoves[currentMove].xMove,
+          safeMoves[currentMove].yMove
+        ) +
+        matrix[
+          safeMoves[currentMove].yMove * arena.gridSize +
+            safeMoves[currentMove].xMove
+        ];
+      if (game.turn == 1) {
+        console.log(
+          safeMoves[currentMove].yMove * arena.gridSize +
+            safeMoves[currentMove].xMove
+        );
+        console.log(
+          matrix[
+            safeMoves[currentMove].yMove * arena.gridSize +
+              safeMoves[currentMove].xMove
+          ]
+        );
+      }
+
+      if (points > bestPoints) {
+        bestPoints = points;
+        bestMoves = [safeMoves[currentMove]];
+      } else if (points == bestPoints) {
+        bestMoves.push(safeMoves[currentMove]);
+      }
+    }
+
+    if (bestMoves.length == 0) {
+      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+    } else {
+      randomMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    }
+
+    return [randomMove.xMove, randomMove.yMove];
+  }
+}
+class BotEnemy {
+  constructor(name, linkedBike) {
+    this.name = name;
+    this.linkedBike = linkedBike;
+    this.currentDir = [0, 0];
+  }
+
+  getMove(arena, game) {
+    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
+    let safeMoves = [];
+    let bestMoves = [];
+    let randomMove = [];
+    let currentMove = 0;
+
+    let points = 0;
+    let bestPoints = -1;
+
     for (currentMove; currentMove < legalMoves.length; currentMove++) {
       if (legalMoves[currentMove].collision == false) {
         safeMoves.push(legalMoves[currentMove]);
@@ -373,15 +455,8 @@ class Bot {
 
     return [randomMove.xMove, randomMove.yMove];
   }
-}
-class BotEnemy {
-  constructor(name, linkedBike) {
-    this.name = name;
-    this.linkedBike = linkedBike;
-    this.currentDir = [0, 0];
-  }
 
-  getMove(arena) {
+  getMovePoints(arena) {
     let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
     let safeMoves = [];
     let randomMove = [];
@@ -423,7 +498,7 @@ player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
 bot1 = new Bot("Blue", player1);
-bot2 = new Bot("Red", player2);
+bot2 = new BotEnemy("Red", player2);
 
 currentArena.drawArena();
 
