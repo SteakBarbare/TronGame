@@ -8,7 +8,7 @@ class Arena {
     this.grid = [];
   }
 
-  fillGrid(updateCanvas, createBorderWalls = false) {
+  fillGrid(updateCanvas, createBorderWalls = true) {
     let xPos, yPos;
 
     for (xPos = 0; xPos < this.gridSize; xPos++) {
@@ -188,6 +188,10 @@ class Bike {
     // console.log(x * arena.gridSize + y);
     // console.log(arena.grid[x * arena.gridSize + y]);
 
+    if (!arena.isValidMove(x, y)) {
+      return;
+    }
+
     let isCollision = arena.checkCollision(x, y);
 
     // Stop the game if a collision is detected
@@ -255,7 +259,25 @@ class Bot {
   }
 
   getMove(arena) {
-    console.log(arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y));
+    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
+    let safeMoves = [];
+    let randomMove = [];
+    let currentMove = 0;
+
+    for (currentMove; currentMove < legalMoves.length; currentMove++) {
+      if (legalMoves[currentMove].collision == false) {
+        safeMoves.push(legalMoves[currentMove]);
+      }
+    }
+
+    if (safeMoves.length == 0) {
+      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+    } else {
+      randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+    }
+    console.log([randomMove.xMove, randomMove.yMove]);
+
+    return [randomMove.xMove, randomMove.yMove];
   }
 }
 
@@ -263,10 +285,10 @@ class Bot {
 currentArena = new Arena(30, 20);
 currentArena.fillGrid(true);
 
-player1 = new Bike(0, 0, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
+player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
 player2 = new Bike(
-  currentArena.gridSize - 1,
-  currentArena.gridSize - 1,
+  currentArena.gridSize - 2,
+  currentArena.gridSize - 2,
   3,
   3,
   "rgb(161, 18, 32)",
@@ -327,6 +349,13 @@ function gameLoop() {
   if (!currentGame.isOver) {
     let moveCoordinates = [];
     moveCoordinates = currentGame.currentPlayer.getMove(currentArena);
+
+    currentGame.currentPlayer.linkedBike.moveBike(
+      moveCoordinates[0],
+      moveCoordinates[1],
+      currentArena,
+      currentGame
+    );
   }
   window.requestAnimationFrame(gameLoop);
 }
