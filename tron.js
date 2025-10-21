@@ -362,12 +362,11 @@ class Bot {
     this.name = name;
     this.linkedBike = linkedBike;
   }
-}
-class BotEnemy {
-  constructor(name, linkedBike) {
-    this.name = name;
-    this.linkedBike = linkedBike;
-  }
+
+  // Put your code here
+  // This should only return an array containing the choosen coordinates
+  // Ex: [2, 1]
+  getMove() {}
 }
 
 // Game Initialisation
@@ -388,68 +387,29 @@ player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
 bot1 = new Bot("Blue", player1);
-bot2 = new BotEnemy("Red", player2);
+bot2 = new Bot("Red", player2);
 
 currentArena.drawArena();
 
 // Game Loop
 currentGame = new Game(bot1, bot2, bot1);
 
-// Manual Controls
-document.addEventListener("keydown", (event) => {
-  if (event.repeat || currentGame.isOver) return;
-  switch (event.key) {
-    case "ArrowRight":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x + 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowLeft":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x - 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowDown":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y + 1,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowUp":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y - 1,
-        currentArena,
-        currentGame
-      );
-      break;
+function gameLoop() {
+  if (!currentGame.isOver) {
+    let moveCoordinates = [];
+    moveCoordinates = currentGame.currentPlayer.getMove(
+      currentArena,
+      currentGame
+    );
+
+    currentGame.currentPlayer.linkedBike.moveBike(
+      moveCoordinates[0],
+      moveCoordinates[1],
+      currentArena,
+      currentGame
+    );
   }
-});
-
-// function gameLoop() {
-//   if (!currentGame.isOver) {
-//     let moveCoordinates = [];
-//     moveCoordinates = currentGame.currentPlayer.getMove(
-//       currentArena,
-//       currentGame
-//     );
-
-//     currentGame.currentPlayer.linkedBike.moveBike(
-//       moveCoordinates[0],
-//       moveCoordinates[1],
-//       currentArena,
-//       currentGame
-//     );
-//   }
-//   window.requestAnimationFrame(gameLoop);
-// }
+  window.requestAnimationFrame(gameLoop);
+}
 
 gameLoop();
