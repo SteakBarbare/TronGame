@@ -334,81 +334,6 @@ class Bot {
     this.linkedBike = linkedBike;
     this.targetDir = [0, 0];
   }
-
-  getMove(arena, game) {
-    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
-    let safeMoves = [];
-    let bestMoves = [];
-    let randomMove = [];
-    let currentMove = 0;
-
-    let points = 0;
-    let bestPoints = -1;
-
-    let matrix = [
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
-      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 9, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-      7, 7, 7, 9, 0, 0, 9, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 0,
-      0, 9, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9, 0, 0, 9, 4, 4, 4,
-      4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 9, 0, 0, 9, 3, 3, 3, 3, 3, 3, 3, 3,
-      3, 3, 3, 3, 3, 3, 3, 3, 9, 0, 0, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 9, 0, 0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0,
-      0, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 0, 0, 9, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 0, 0, 9, 3, 3, 3, 3, 3, 3, 3, 3,
-      3, 3, 3, 3, 3, 3, 3, 3, 9, 0, 0, 9, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-      4, 4, 4, 9, 0, 0, 9, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9, 0,
-      0, 9, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 0, 0, 9, 7, 7, 7,
-      7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 9, 0, 0, 9, 8, 8, 8, 8, 8, 8, 8, 8,
-      8, 8, 8, 8, 8, 8, 8, 8, 9, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-      9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ];
-
-    for (currentMove; currentMove < legalMoves.length; currentMove++) {
-      if (legalMoves[currentMove].collision == false) {
-        safeMoves.push(legalMoves[currentMove]);
-      }
-    }
-
-    for (currentMove = 0; currentMove < safeMoves.length; currentMove++) {
-      points =
-        arena.getAvailableTilesNumber(
-          safeMoves[currentMove].xMove,
-          safeMoves[currentMove].yMove
-        ) +
-        matrix[
-          safeMoves[currentMove].yMove * arena.gridSize +
-            safeMoves[currentMove].xMove
-        ];
-      if (game.turn == 1) {
-        console.log(
-          safeMoves[currentMove].yMove * arena.gridSize +
-            safeMoves[currentMove].xMove
-        );
-        console.log(
-          matrix[
-            safeMoves[currentMove].yMove * arena.gridSize +
-              safeMoves[currentMove].xMove
-          ]
-        );
-      }
-
-      if (points > bestPoints) {
-        bestPoints = points;
-        bestMoves = [safeMoves[currentMove]];
-      } else if (points == bestPoints) {
-        bestMoves.push(safeMoves[currentMove]);
-      }
-    }
-
-    if (bestMoves.length == 0) {
-      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-    } else {
-      randomMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-    }
-
-    return [randomMove.xMove, randomMove.yMove];
-  }
 }
 class BotEnemy {
   constructor(name, linkedBike) {
@@ -416,68 +341,6 @@ class BotEnemy {
     this.linkedBike = linkedBike;
     this.currentDir = [0, 0];
   }
-
-  getMove(arena, game) {
-    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
-    let safeMoves = [];
-    let bestMoves = [];
-    let randomMove = [];
-    let currentMove = 0;
-
-    let points = 0;
-    let bestPoints = -1;
-
-    for (currentMove; currentMove < legalMoves.length; currentMove++) {
-      if (legalMoves[currentMove].collision == false) {
-        safeMoves.push(legalMoves[currentMove]);
-      }
-    }
-
-    for (currentMove = 0; currentMove < safeMoves.length; currentMove++) {
-      points = arena.getAvailableTilesNumber(
-        safeMoves[currentMove].xMove,
-        safeMoves[currentMove].yMove
-      );
-
-      if (points > bestPoints) {
-        bestPoints = points;
-        bestMoves = [safeMoves[currentMove]];
-      } else if (points == bestPoints) {
-        bestMoves.push(safeMoves[currentMove]);
-      }
-    }
-
-    if (bestMoves.length == 0) {
-      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-    } else {
-      randomMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-    }
-
-    return [randomMove.xMove, randomMove.yMove];
-  }
-
-  getMovePoints(arena) {
-    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
-    let safeMoves = [];
-    let randomMove = [];
-    let currentMove = 0;
-
-    for (currentMove; currentMove < legalMoves.length; currentMove++) {
-      if (legalMoves[currentMove].collision == false) {
-        safeMoves.push(legalMoves[currentMove]);
-      }
-    }
-
-    if (safeMoves.length == 0) {
-      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-    } else {
-      randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
-    }
-
-    return [randomMove.xMove, randomMove.yMove];
-  }
-
-  basicMove(arena) {}
 }
 
 // Game Initialisation
@@ -506,60 +369,60 @@ currentArena.drawArena();
 currentGame = new Game(bot1, bot2, bot1);
 
 // Manual Controls
-// document.addEventListener("keydown", event => {
-//   if (event.repeat || currentGame.isOver) return;
-//   switch (event.key) {
-//     case "ArrowRight":
-//       currentGame.currentPlayer.linkedBike.moveBike(
-//         currentGame.currentPlayer.linkedBike.x + 1,
-//         currentGame.currentPlayer.linkedBike.y,
-//         currentArena,
-//         currentGame
-//       );
-//       break;
-//     case "ArrowLeft":
-//       currentGame.currentPlayer.linkedBike.moveBike(
-//         currentGame.currentPlayer.linkedBike.x - 1,
-//         currentGame.currentPlayer.linkedBike.y,
-//         currentArena,
-//         currentGame
-//       );
-//       break;
-//     case "ArrowDown":
-//       currentGame.currentPlayer.linkedBike.moveBike(
-//         currentGame.currentPlayer.linkedBike.x,
-//         currentGame.currentPlayer.linkedBike.y + 1,
-//         currentArena,
-//         currentGame
-//       );
-//       break;
-//     case "ArrowUp":
-//       currentGame.currentPlayer.linkedBike.moveBike(
-//         currentGame.currentPlayer.linkedBike.x,
-//         currentGame.currentPlayer.linkedBike.y - 1,
-//         currentArena,
-//         currentGame
-//       );
-//       break;
-//   }
-// });
-
-function gameLoop() {
-  if (!currentGame.isOver) {
-    let moveCoordinates = [];
-    moveCoordinates = currentGame.currentPlayer.getMove(
-      currentArena,
-      currentGame
-    );
-
-    currentGame.currentPlayer.linkedBike.moveBike(
-      moveCoordinates[0],
-      moveCoordinates[1],
-      currentArena,
-      currentGame
-    );
+document.addEventListener("keydown", event => {
+  if (event.repeat || currentGame.isOver) return;
+  switch (event.key) {
+    case "ArrowRight":
+      currentGame.currentPlayer.linkedBike.moveBike(
+        currentGame.currentPlayer.linkedBike.x + 1,
+        currentGame.currentPlayer.linkedBike.y,
+        currentArena,
+        currentGame
+      );
+      break;
+    case "ArrowLeft":
+      currentGame.currentPlayer.linkedBike.moveBike(
+        currentGame.currentPlayer.linkedBike.x - 1,
+        currentGame.currentPlayer.linkedBike.y,
+        currentArena,
+        currentGame
+      );
+      break;
+    case "ArrowDown":
+      currentGame.currentPlayer.linkedBike.moveBike(
+        currentGame.currentPlayer.linkedBike.x,
+        currentGame.currentPlayer.linkedBike.y + 1,
+        currentArena,
+        currentGame
+      );
+      break;
+    case "ArrowUp":
+      currentGame.currentPlayer.linkedBike.moveBike(
+        currentGame.currentPlayer.linkedBike.x,
+        currentGame.currentPlayer.linkedBike.y - 1,
+        currentArena,
+        currentGame
+      );
+      break;
   }
-  window.requestAnimationFrame(gameLoop);
-}
+});
+
+// function gameLoop() {
+//   if (!currentGame.isOver) {
+//     let moveCoordinates = [];
+//     moveCoordinates = currentGame.currentPlayer.getMove(
+//       currentArena,
+//       currentGame
+//     );
+
+//     currentGame.currentPlayer.linkedBike.moveBike(
+//       moveCoordinates[0],
+//       moveCoordinates[1],
+//       currentArena,
+//       currentGame
+//     );
+//   }
+//   window.requestAnimationFrame(gameLoop);
+// }
 
 gameLoop();
