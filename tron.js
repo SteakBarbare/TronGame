@@ -125,6 +125,35 @@ class Arena {
     return legalMoves;
   }
 
+  getLineSize(x, y, dir) {
+    let lineSize = 0;
+    let currentX = x;
+    let currentY = y;
+
+    currentX += dir[0];
+    currentY += dir[1];
+    lineSize++;
+
+    while (
+      this.isValidMove(currentX, currentY) &&
+      this.checkCollision(currentX, currentY) == false
+    ) {
+      currentX += dir[0];
+      currentY += dir[1];
+      lineSize++;
+    }
+
+    return {
+      maxX: currentX,
+      maxY: currentY,
+      lineSize: lineSize
+    };
+  }
+
+  getMoveDirection(x, y, xMove, yMove) {
+    return [Math.sign(xMove - x), Math.sign(yMove - y)];
+  }
+
   isValidMove(x, y) {
     if (
       x * this.gridSize + y >= this.gridSize * this.gridSize ||
@@ -161,8 +190,6 @@ class Tile {
     this.color = color;
     this.linkedPlayer = undefined;
   }
-
-  placeTile(x, y, content, color) {}
 }
 
 class Bike {
@@ -189,6 +216,7 @@ class Bike {
     // console.log(arena.grid[x * arena.gridSize + y]);
 
     if (!arena.isValidMove(x, y)) {
+      game.endGame(true);
       return;
     }
 
@@ -243,10 +271,17 @@ class Game {
     }
   }
 
-  endGame() {
+  endGame(isCrash = false) {
     let winner = this.getOtherPlayer();
     console.log(winner.name + " has won !");
     console.log("It took " + this.turn + " turns to achieve victory");
+    if (isCrash) {
+      console.log(
+        "Victory was obtained because" +
+          currentPlayer.name +
+          " crashed the game (ex: invalid move)"
+      );
+    }
 
     this.isOver = true;
   }
@@ -261,8 +296,13 @@ class Bot {
   getMove(arena) {
     let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
     let safeMoves = [];
+    let bestMoves = [];
     let randomMove = [];
     let currentMove = 0;
+
+    let moveDir = [];
+    let line = 0;
+    let biggestLine = -1;
 
     for (currentMove; currentMove < legalMoves.length; currentMove++) {
       if (legalMoves[currentMove].collision == false) {
@@ -270,12 +310,32 @@ class Bot {
       }
     }
 
-    if (safeMoves.length == 0) {
+    for (currentMove = 0; currentMove < safeMoves.length; currentMove++) {
+      moveDir = arena.getMoveDirection(
+        this.linkedBike.x,
+        this.linkedBike.y,
+        safeMoves[currentMove].xMove,
+        safeMoves[currentMove].yMove
+      );
+      console.log(moveDir);
+      line = arena.getLineSize(this.linkedBike.x, this.linkedBike.y, moveDir);
+      console.log(line);
+
+      if (line.lineSize > biggestLine) {
+        biggestLine = line.lineSize;
+        bestMoves = [safeMoves[currentMove]];
+      } else if (line.lineSize == biggestLine) {
+        bestMoves.push(safeMoves[currentMove]);
+      }
+    }
+    // console.log(bestMoves);
+
+    if (bestMoves.length == 0) {
       randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
     } else {
-      randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+      randomMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
     }
-    console.log([randomMove.xMove, randomMove.yMove]);
+    // console.log([randomMove.xMove, randomMove.yMove]);
 
     return [randomMove.xMove, randomMove.yMove];
   }
