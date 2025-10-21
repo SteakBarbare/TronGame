@@ -92,7 +92,7 @@ class Arena {
     }
   }
 
-  getLegalMoves(x, y) {
+  getLegalMoves(x, y, returnCollision = true) {
     let possibleMoves = [
       [x + 1, y],
       [x - 1, y],
@@ -102,6 +102,7 @@ class Arena {
 
     let currentMove = 0;
     let legalMoves = [];
+    let isCollision = false;
 
     for (currentMove; currentMove < possibleMoves.length; currentMove++) {
       if (
@@ -110,15 +111,18 @@ class Arena {
           possibleMoves[currentMove][1]
         )
       ) {
-        legalMoves.push({
-          xMove: possibleMoves[currentMove][0],
-          yMove: possibleMoves[currentMove][1],
-          collision: this.checkCollision(
-            possibleMoves[currentMove][0],
-            possibleMoves[currentMove][1],
-            true
-          )
-        });
+        isCollision = this.checkCollision(
+          possibleMoves[currentMove][0],
+          possibleMoves[currentMove][1],
+          true
+        );
+        if (returnCollision || (!isCollision && !returnCollision)) {
+          legalMoves.push({
+            xMove: possibleMoves[currentMove][0],
+            yMove: possibleMoves[currentMove][1],
+            collision: isCollision
+          });
+        }
       }
     }
 
@@ -152,6 +156,49 @@ class Arena {
 
   getMoveDirection(x, y, xMove, yMove) {
     return [Math.sign(xMove - x), Math.sign(yMove - y)];
+  }
+
+  getAvailableTilesNumber(x, y) {
+    let totalMoves = [];
+    let newMoves = this.getLegalMoves(x, y, false);
+    let isNewMove = true;
+    let foundMoves = [];
+    let currentMove = 0;
+    let currentTotalMove = 0;
+
+    while (newMoves.length > 0) {
+      foundMoves = this.getLegalMoves(
+        newMoves[0].xMove,
+        newMoves[0].yMove,
+        false
+      );
+      newMoves.splice(0, 1);
+
+      // Check if found moves are new
+      for (currentMove = 0; currentMove < foundMoves.length; currentMove++) {
+        isNewMove = true;
+        for (
+          currentTotalMove = 0;
+          currentTotalMove < totalMoves.length;
+          currentTotalMove++
+        ) {
+          if (
+            foundMoves[currentMove].xMove ==
+              totalMoves[currentTotalMove].xMove &&
+            foundMoves[currentMove].yMove == totalMoves[currentTotalMove].yMove
+          ) {
+            isNewMove = false;
+            break;
+          }
+        }
+        if (isNewMove) {
+          totalMoves.push(foundMoves[currentMove]);
+          newMoves.push(foundMoves[currentMove]);
+        }
+      }
+    }
+
+    return totalMoves.length;
   }
 
   isValidMove(x, y) {
@@ -209,12 +256,6 @@ class Bike {
   }
 
   moveBike(x, y, arena, game) {
-    // console.log(x);
-    // console.log(y);
-    // console.log(arena.gridSize);
-    // console.log(x * arena.gridSize + y);
-    // console.log(arena.grid[x * arena.gridSize + y]);
-
     if (!arena.isValidMove(x, y)) {
       game.endGame(true);
       return;
@@ -291,18 +332,18 @@ class Bot {
   constructor(name, linkedBike) {
     this.name = name;
     this.linkedBike = linkedBike;
+    this.targetDir = [0, 0];
   }
 
-  getMove(arena) {
+  getMove(arena, game) {
     let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
     let safeMoves = [];
     let bestMoves = [];
     let randomMove = [];
     let currentMove = 0;
 
-    let moveDir = [];
-    let line = 0;
-    let biggestLine = -1;
+    let points = 0;
+    let bestPoints = -1;
 
     for (currentMove; currentMove < legalMoves.length; currentMove++) {
       if (legalMoves[currentMove].collision == false) {
@@ -311,34 +352,57 @@ class Bot {
     }
 
     for (currentMove = 0; currentMove < safeMoves.length; currentMove++) {
-      moveDir = arena.getMoveDirection(
-        this.linkedBike.x,
-        this.linkedBike.y,
+      points = arena.getAvailableTilesNumber(
         safeMoves[currentMove].xMove,
         safeMoves[currentMove].yMove
       );
-      console.log(moveDir);
-      line = arena.getLineSize(this.linkedBike.x, this.linkedBike.y, moveDir);
-      console.log(line);
 
-      if (line.lineSize > biggestLine) {
-        biggestLine = line.lineSize;
+      if (points > bestPoints) {
+        bestPoints = points;
         bestMoves = [safeMoves[currentMove]];
-      } else if (line.lineSize == biggestLine) {
+      } else if (points == bestPoints) {
         bestMoves.push(safeMoves[currentMove]);
       }
     }
-    // console.log(bestMoves);
 
     if (bestMoves.length == 0) {
       randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
     } else {
       randomMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
     }
-    // console.log([randomMove.xMove, randomMove.yMove]);
 
     return [randomMove.xMove, randomMove.yMove];
   }
+}
+class BotEnemy {
+  constructor(name, linkedBike) {
+    this.name = name;
+    this.linkedBike = linkedBike;
+    this.currentDir = [0, 0];
+  }
+
+  getMove(arena) {
+    let legalMoves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y);
+    let safeMoves = [];
+    let randomMove = [];
+    let currentMove = 0;
+
+    for (currentMove; currentMove < legalMoves.length; currentMove++) {
+      if (legalMoves[currentMove].collision == false) {
+        safeMoves.push(legalMoves[currentMove]);
+      }
+    }
+
+    if (safeMoves.length == 0) {
+      randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+    } else {
+      randomMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+    }
+
+    return [randomMove.xMove, randomMove.yMove];
+  }
+
+  basicMove(arena) {}
 }
 
 // Game Initialisation
@@ -358,8 +422,8 @@ player2 = new Bike(
 player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
-bot1 = new Bot("SuuS", player1);
-bot2 = new Bot("La Sauce", player2);
+bot1 = new Bot("Blue", player1);
+bot2 = new Bot("Red", player2);
 
 currentArena.drawArena();
 
@@ -408,7 +472,10 @@ currentGame = new Game(bot1, bot2, bot1);
 function gameLoop() {
   if (!currentGame.isOver) {
     let moveCoordinates = [];
-    moveCoordinates = currentGame.currentPlayer.getMove(currentArena);
+    moveCoordinates = currentGame.currentPlayer.getMove(
+      currentArena,
+      currentGame
+    );
 
     currentGame.currentPlayer.linkedBike.moveBike(
       moveCoordinates[0],
