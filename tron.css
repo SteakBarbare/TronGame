@@ -1,0 +1,24 @@
+html {
+  width: 100%;
+  height: 100%;
+  color: gray;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  color: gray;
+  background-image: url(Images/background.jpg);
+  background-position: center;
+  background-size: cover;
+}
+
+#game {
+  margin: auto;
+  padding: 0;
+  display: block;
+  width: 1024px;
+  height: 1024px;
+  image-rendering: pixelated;
+}
