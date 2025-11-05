@@ -103,7 +103,7 @@ class Arena {
       [x + 1, y],
       [x - 1, y],
       [x, y + 1],
-      [x, y - 1]
+      [x, y - 1],
     ];
 
     let currentMove = 0;
@@ -126,7 +126,7 @@ class Arena {
           legalMoves.push({
             xMove: possibleMoves[currentMove][0],
             yMove: possibleMoves[currentMove][1],
-            collision: isCollision
+            collision: isCollision,
           });
         }
       }
@@ -157,7 +157,7 @@ class Arena {
     return {
       maxX: currentX,
       maxY: currentY,
-      lineSize: lineSize
+      lineSize: lineSize,
     };
   }
 
@@ -236,6 +236,13 @@ class Arena {
 
     return false;
   }
+
+  // Get the distance from a tile to another
+  distanceTo(x, y, xTarget, yTarget) {
+    let distanceTo = x + y - (xTarget + yTarget);
+
+    return Math.abs(distanceTo);
+  }
 }
 
 class Tile {
@@ -274,6 +281,12 @@ class Bike {
       return;
     }
 
+    if (arena.distanceTo(this.x, this.y, x, y) > 1) {
+      console.log("Invalid move, tried to move to a too far away tile");
+      game.endGame(true);
+      return;
+    }
+
     let isCollision = arena.checkCollision(x, y);
 
     // Stop the game if a collision is detected
@@ -288,7 +301,7 @@ class Bike {
     arena.grid[x * arena.gridSize + y].color = this.wallColor;
     arena.drawArena([
       arena.grid[this.x * arena.gridSize + this.y],
-      arena.grid[x * arena.gridSize + y]
+      arena.grid[x * arena.gridSize + y],
     ]);
 
     this.x = x;
@@ -383,7 +396,7 @@ currentArena.drawArena();
 currentGame = new Game(bot1, bot2, bot1);
 
 // Manual Controls
-document.addEventListener("keydown", event => {
+document.addEventListener("keydown", (event) => {
   if (event.repeat || currentGame.isOver) return;
   switch (event.key) {
     case "ArrowRight":
