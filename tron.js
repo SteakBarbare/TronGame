@@ -103,7 +103,7 @@ class Arena {
       [x + 1, y],
       [x - 1, y],
       [x, y + 1],
-      [x, y - 1],
+      [x, y - 1]
     ];
 
     let currentMove = 0;
@@ -126,7 +126,7 @@ class Arena {
           legalMoves.push({
             xMove: possibleMoves[currentMove][0],
             yMove: possibleMoves[currentMove][1],
-            collision: isCollision,
+            collision: isCollision
           });
         }
       }
@@ -157,7 +157,7 @@ class Arena {
     return {
       maxX: currentX,
       maxY: currentY,
-      lineSize: lineSize,
+      lineSize: lineSize
     };
   }
 
@@ -301,7 +301,7 @@ class Bike {
     arena.grid[x * arena.gridSize + y].color = this.wallColor;
     arena.drawArena([
       arena.grid[this.x * arena.gridSize + this.y],
-      arena.grid[x * arena.gridSize + y],
+      arena.grid[x * arena.gridSize + y]
     ]);
 
     this.x = x;
@@ -362,12 +362,11 @@ class Bot {
     this.name = name;
     this.linkedBike = linkedBike;
   }
-}
-class BotEnemy {
-  constructor(name, linkedBike) {
-    this.name = name;
-    this.linkedBike = linkedBike;
-  }
+
+  // Put your code here
+  // This should only return an array containing the choosen coordinates
+  // Ex: [2, 1]
+  getMove() {}
 }
 
 // Game Initialisation
@@ -388,68 +387,55 @@ player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
 bot1 = new Bot("Blue", player1);
-bot2 = new BotEnemy("Red", player2);
+bot2 = new Bot("Red", player2);
 
 currentArena.drawArena();
 
 // Game Loop
 currentGame = new Game(bot1, bot2, bot1);
 
-// Manual Controls
-document.addEventListener("keydown", (event) => {
-  if (event.repeat || currentGame.isOver) return;
-  switch (event.key) {
-    case "ArrowRight":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x + 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowLeft":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x - 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowDown":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y + 1,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowUp":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y - 1,
-        currentArena,
-        currentGame
-      );
-      break;
+function gameLoop() {
+  if (!currentGame.isOver) {
+    let moveCoordinates = [];
+    moveCoordinates = currentGame.currentPlayer.getMove(
+      currentArena,
+      currentGame
+    );
+
+    currentGame.currentPlayer.linkedBike.moveBike(
+      moveCoordinates[0],
+      moveCoordinates[1],
+      currentArena,
+      currentGame
+    );
   }
-});
+  window.requestAnimationFrame(gameLoop);
+}
 
-// function gameLoop() {
-//   if (!currentGame.isOver) {
-//     let moveCoordinates = [];
-//     moveCoordinates = currentGame.currentPlayer.getMove(
-//       currentArena,
-//       currentGame
-//     );
+bot1 = new Bot("Blue", player1);
+bot2 = new Bot("Red", player2);
 
-//     currentGame.currentPlayer.linkedBike.moveBike(
-//       moveCoordinates[0],
-//       moveCoordinates[1],
-//       currentArena,
-//       currentGame
-//     );
-//   }
-//   window.requestAnimationFrame(gameLoop);
-// }
+function playGameSet(gamesToPlay, bot1, bot2) {
+  // Game Initialisation
+  currentArena = new Arena(30, 20);
+  currentArena.fillGrid(true);
 
-gameLoop();
+  player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
+  player2 = new Bike(
+    currentArena.gridSize - 2,
+    currentArena.gridSize - 2,
+    3,
+    3,
+    "rgb(161, 18, 32)",
+    "rgb(110, 19, 44)"
+  );
+
+  player1.placeBike(player1.x, player1.y, currentArena);
+  player2.placeBike(player2.x, player2.y, currentArena);
+
+  bot1.linkedBike = player1;
+  bot2.linkedBike = player2;
+
+  // Game Loop
+  currentGame = new Game(bot1, bot2, bot1);
+}
