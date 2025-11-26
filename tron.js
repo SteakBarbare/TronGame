@@ -11,6 +11,7 @@ class Arena {
 
   // Fills the grid with tiles
   fillGrid(updateCanvas, createBorderWalls = true) {
+    this.grid = [];
     let xPos, yPos;
 
     for (xPos = 0; xPos < this.gridSize; xPos++) {
@@ -86,14 +87,14 @@ class Arena {
           );
       }
 
-      context.strokeStyle = "black";
-      context.rect(
-        tilesArray[currentTile].x * this.tileSize,
-        tilesArray[currentTile].y * this.tileSize,
-        this.tileSize,
-        this.tileSize
-      );
-      context.stroke();
+      // context.strokeStyle = "black";
+      // context.rect(
+      //   tilesArray[currentTile].x * this.tileSize,
+      //   tilesArray[currentTile].y * this.tileSize,
+      //   this.tileSize,
+      //   this.tileSize
+      // );
+      // context.stroke();
     }
   }
 
@@ -278,20 +279,14 @@ class Bike {
   moveBike(x, y, arena, game) {
     if (!arena.isValidMove(x, y)) {
       game.endGame(true);
-      // arena.drawArena([
-      //   arena.grid[this.x * arena.gridSize + this.y],
-      //   arena.grid[x * arena.gridSize + y],
-      // ]);
+
       return;
     }
 
     if (arena.distanceTo(this.x, this.y, x, y) > 1) {
       console.log("Invalid move, tried to move to a too far away tile");
       game.endGame(true);
-      // arena.drawArena([
-      //   arena.grid[this.x * arena.gridSize + this.y],
-      //   arena.grid[x * arena.gridSize + y],
-      // ]);
+
       return;
     }
 
@@ -300,10 +295,6 @@ class Bike {
     // Stop the game if a collision is detected
     if (isCollision) {
       game.endGame();
-      arena.drawArena([
-        arena.grid[this.x * arena.gridSize + this.y],
-        arena.grid[x * arena.gridSize + y],
-      ]);
       return;
     }
 
@@ -311,10 +302,6 @@ class Bike {
     arena.grid[x * arena.gridSize + y].content = "Player";
     arena.grid[x * arena.gridSize + y].linkedPlayer = this;
     arena.grid[x * arena.gridSize + y].color = this.wallColor;
-    // arena.drawArena([
-    //   arena.grid[this.x * arena.gridSize + this.y],
-    //   arena.grid[x * arena.gridSize + y],
-    // ]);
 
     this.x = x;
     this.y = y;
@@ -354,10 +341,8 @@ class Game {
   }
 
   // End the game and show scores
-  endGame(isCrash = false, currentArena) {
+  endGame(isCrash = false) {
     let winner = this.getOtherPlayer();
-    console.log(winner.name + " has won !");
-    console.log("It took " + this.turn + " turns to achieve victory");
     if (isCrash) {
       console.log(
         "Victory was obtained because" +
@@ -375,6 +360,7 @@ class Bot {
   constructor(name, linkedBike) {
     this.name = name;
     this.linkedBike = linkedBike;
+    this.wins = "";
   }
 
   // Put your code here
@@ -391,17 +377,17 @@ class Bot {
       moves = arena.getLegalMoves(this.linkedBike.x, this.linkedBike.y, true);
     }
 
-    let randomMove = moves[Math.floor(Math.random(moves.length))];
+    let randomMove = moves[Math.floor(Math.random() * moves.length)];
     return [randomMove.xMove, randomMove.yMove];
   }
 }
 
 // Game Initialisation
-currentArena = new Arena(30, 20);
+let currentArena = new Arena(30, 20);
 currentArena.fillGrid(true);
 
-player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
-player2 = new Bike(
+let player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
+let player2 = new Bike(
   currentArena.gridSize - 2,
   currentArena.gridSize - 2,
   3,
@@ -413,24 +399,32 @@ player2 = new Bike(
 player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
-bot1 = new Bot("Blue", player1);
-bot2 = new Bot("Red", player2);
+let bot1 = new Bot("Blue", player1);
+let bot2 = new Bot("Red", player2);
+
+bot1.winToken = "🔵";
+bot2.winToken = "🔴";
 
 let gameCount = 0;
+let gamesToPlay = 100;
 let currentGame = new Game(bot1, bot2, bot1);
 currentArena.drawArena();
 
-function playGameSet(gamesToPlay) {
+function playGameSet() {
+  console.log(gameCount);
+
   if (gameCount >= gamesToPlay) return;
 
   if (currentGame.isOver) {
-    currentGame.winner.win++;
+    currentGame.winner.wins += currentGame.winner.winToken;
     gameCount++;
+    console.log(`Player 1 score:`, bot1.wins);
+    console.log(`Player 2 score:`, bot2.wins);
+
+    currentArena.drawArena();
 
     // Game Initialisation
-    currentArena = new Arena(30, 20);
-    currentArena.fillGrid(true);
-    console.log(currentArena.grid);
+    currentArena.fillGrid(false, true);
 
     player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
     player2 = new Bike(
@@ -450,7 +444,6 @@ function playGameSet(gamesToPlay) {
 
     // Game Loop
     currentGame = new Game(bot1, bot2, bot1);
-    currentArena.drawArena();
   } else {
     let moveCoordinates = [];
     moveCoordinates = currentGame.currentPlayer.getMove(
@@ -465,8 +458,7 @@ function playGameSet(gamesToPlay) {
       currentGame
     );
   }
-
   window.requestAnimationFrame(playGameSet);
 }
 
-playGameSet(200, bot1, bot2);
+playGameSet();
