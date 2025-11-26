@@ -406,6 +406,11 @@ bot1.wins = 0;
 bot2.wins = 0;
 
 let currentGame = new Game(bot1, bot2, bot1);
+if (Math.random() > 0.5) {
+  currentGame.currentPlayer = bot1;
+} else {
+  currentGame.currentPlayer = bot2;
+}
 currentArena.drawArena();
 
 function playGameSet(gamesToPlay) {
@@ -441,7 +446,11 @@ function playGameSet(gamesToPlay) {
       bot2.linkedBike = player2;
 
       // Game Loop
-      currentGame = new Game(bot1, bot2, bot1);
+      if (Math.random() > 0.5) {
+        currentGame = new Game(bot1, bot2, bot1);
+      } else {
+        currentGame = new Game(bot1, bot2, bot2);
+      }
     } else {
       let moveCoordinates = [];
       moveCoordinates = currentGame.currentPlayer.getMove(
