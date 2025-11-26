@@ -360,7 +360,7 @@ class Bot {
   constructor(name, linkedBike) {
     this.name = name;
     this.linkedBike = linkedBike;
-    this.wins = "";
+    this.wins = 0;
   }
 
   // Put your code here
@@ -402,63 +402,65 @@ player2.placeBike(player2.x, player2.y, currentArena);
 let bot1 = new Bot("Blue", player1);
 let bot2 = new Bot("Red", player2);
 
-bot1.winToken = "🔵";
-bot2.winToken = "🔴";
+bot1.wins = 0;
+bot2.wins = 0;
 
-let gameCount = 0;
-let gamesToPlay = 100;
 let currentGame = new Game(bot1, bot2, bot1);
 currentArena.drawArena();
 
-function playGameSet() {
+function playGameSet(gamesToPlay) {
+  let gameCount = 0;
   console.log(gameCount);
 
-  if (gameCount >= gamesToPlay) return;
+  while (gameCount < gamesToPlay) {
+    if (currentGame.isOver) {
+      currentGame.winner.wins++;
+      gameCount++;
+      console.log(`Player 1 score:`, bot1.wins);
+      console.log(`Player 2 score:`, bot2.wins);
 
-  if (currentGame.isOver) {
-    currentGame.winner.wins += currentGame.winner.winToken;
-    gameCount++;
-    console.log(`Player 1 score:`, bot1.wins);
-    console.log(`Player 2 score:`, bot2.wins);
+      currentArena.drawArena();
 
-    currentArena.drawArena();
+      // Game Initialisation
+      currentArena.fillGrid(false, true);
 
-    // Game Initialisation
-    currentArena.fillGrid(false, true);
+      player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
+      player2 = new Bike(
+        currentArena.gridSize - 2,
+        currentArena.gridSize - 2,
+        3,
+        3,
+        "rgb(161, 18, 32)",
+        "rgb(110, 19, 44)"
+      );
 
-    player1 = new Bike(1, 1, 3, 3, "rgb(15, 28, 125)", "rgb(29, 10, 82)");
-    player2 = new Bike(
-      currentArena.gridSize - 2,
-      currentArena.gridSize - 2,
-      3,
-      3,
-      "rgb(161, 18, 32)",
-      "rgb(110, 19, 44)"
-    );
+      player1.placeBike(player1.x, player1.y, currentArena);
+      player2.placeBike(player2.x, player2.y, currentArena);
 
-    player1.placeBike(player1.x, player1.y, currentArena);
-    player2.placeBike(player2.x, player2.y, currentArena);
+      bot1.linkedBike = player1;
+      bot2.linkedBike = player2;
 
-    bot1.linkedBike = player1;
-    bot2.linkedBike = player2;
+      // Game Loop
+      currentGame = new Game(bot1, bot2, bot1);
+    } else {
+      let moveCoordinates = [];
+      moveCoordinates = currentGame.currentPlayer.getMove(
+        currentArena,
+        currentGame
+      );
 
-    // Game Loop
-    currentGame = new Game(bot1, bot2, bot1);
-  } else {
-    let moveCoordinates = [];
-    moveCoordinates = currentGame.currentPlayer.getMove(
-      currentArena,
-      currentGame
-    );
-
-    currentGame.currentPlayer.linkedBike.moveBike(
-      moveCoordinates[0],
-      moveCoordinates[1],
-      currentArena,
-      currentGame
-    );
+      currentGame.currentPlayer.linkedBike.moveBike(
+        moveCoordinates[0],
+        moveCoordinates[1],
+        currentArena,
+        currentGame
+      );
+    }
   }
-  window.requestAnimationFrame(playGameSet);
+  console.log(`Win ratios: `, (bot1.wins / gamesToPlay) * 100, `% for player1`);
+  console.log(`Win ratios: `, (bot2.wins / gamesToPlay) * 100, `% for player2`);
+
+  return;
 }
 
-playGameSet();
+playGameSet(1000);
