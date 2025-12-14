@@ -359,16 +359,152 @@ class Game {
   }
 }
 
-class Bot {
+class FamahBot {
   constructor(name, linkedBike) {
     this.name = name;
     this.linkedBike = linkedBike;
+    this.myMatrix = [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
+    this.myMatrix2 = [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 9, 0,
+      0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
   }
 
-  // Put your code here
-  // This should only return an array containing the choosen coordinates
-  // Ex: [2, 1]
-  getMove() {}
+  getMove(arena, game) {
+    let moves = arena.getLegalMoves(
+      this.linkedBike.x,
+      this.linkedBike.y,
+      false
+    );
+
+    let maxPoints = 0;
+    let goodMoves = [];
+    let enemy = game.getOtherPlayer().linkedBike;
+
+    for (let allmoves = 0; allmoves < moves.length; allmoves++) {
+      let accessmove = arena.getAvailableTilesNumber(
+        moves[allmoves].xMove,
+        moves[allmoves].yMove
+      );
+      accessmove +=
+        this.myMatrix[moves[allmoves].xMove + moves[allmoves].yMove * 20];
+      let enemyScore = this.prediction(
+        arena,
+        game,
+        this.linkedBike,
+        enemy,
+        moves[allmoves].xMove,
+        moves[allmoves].yMove
+      );
+
+      let totalPoints = accessmove - enemyScore;
+
+      if (accessmove > maxPoints) {
+        maxPoints = accessmove;
+        goodMoves = [[moves[allmoves].xMove, moves[allmoves].yMove]];
+      }
+
+      if (totalPoints > maxPoints) {
+        maxPoints = totalPoints;
+        goodMoves = [[moves[allmoves].xMove, moves[allmoves].yMove]];
+      } else if (totalPoints == maxPoints) {
+        goodMoves.push([moves[allmoves].xMove, moves[allmoves].yMove]);
+      }
+    }
+
+    if (goodMoves.length > 0) {
+      let randomMove = goodMoves[Math.floor(Math.random() * goodMoves.length)];
+
+      return [randomMove[0], randomMove[1]];
+    }
+    return [this.linkedBike.x, this.linkedBike.y];
+  }
+
+  prediction(arena, game, player, enemy, x, y) {
+    console.log(arena);
+    let cloneArena = arena;
+    let cloneGame = new Game(bot1, bot2, bot1);
+    let clonePlayer = new Bike(
+      1,
+      1,
+      3,
+      3,
+      "rgb(15, 28, 125)",
+      "rgb(29, 10, 82)"
+    );
+    let cloneEnemy = new Bike(
+      currentArena.gridSize - 2,
+      currentArena.gridSize - 2,
+      3,
+      3,
+      "rgb(161, 18, 32)",
+      "rgb(110, 19, 44)"
+    );
+
+    cloneArena = structuredClone(arena);
+    cloneGame = structuredClone(game);
+    clonePlayer = structuredClone(player);
+    cloneEnemy = structuredClone(enemy);
+
+    cloneArena = Object.setPrototypeOf(cloneArena, Arena.prototype);
+    cloneGame = Object.setPrototypeOf(cloneGame, Game.prototype);
+    clonePlayer = Object.setPrototypeOf(clonePlayer, Bike.prototype);
+    cloneEnemy = Object.setPrototypeOf(cloneEnemy, Bike.prototype);
+
+    clonePlayer.moveBike(x, y, cloneArena, cloneGame, false);
+
+    let enemyMoves = cloneArena.getLegalMoves(
+      cloneEnemy.x,
+      cloneEnemy.y,
+      false
+    );
+    if (enemyMoves.length === 0) {
+      return 0;
+    }
+
+    let maxEnemyScore = 0;
+    for (let move = 0; move < enemyMoves.length; move++) {
+      let score = cloneArena.getAvailableTilesNumber(
+        enemyMoves[move].xMove,
+        enemyMoves[move].yMove
+      );
+      if (score > maxEnemyScore) {
+        maxEnemyScore = score;
+      }
+    }
+    return maxEnemyScore;
+  }
 }
 
 // Game Initialisation
