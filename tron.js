@@ -1,6 +1,7 @@
 const canvas = document.querySelector("#game");
 const context = canvas.getContext("2d");
 
+// Object to handle the grid and drawing
 class Arena {
   constructor(tileSize, gridSize) {
     this.tileSize = tileSize;
@@ -8,6 +9,7 @@ class Arena {
     this.grid = [];
   }
 
+  // Fills the grid with tiles
   fillGrid(updateCanvas, createBorderWalls = true) {
     let xPos, yPos;
 
@@ -26,11 +28,13 @@ class Arena {
     }
   }
 
+  // Update the canvas size to fit the current grid
   updateCanvasSize() {
     canvas.width = this.gridSize * this.tileSize;
     canvas.height = this.gridSize * this.tileSize;
   }
 
+  // Check if a pos is on the border of the grid
   isBorder(x, y) {
     if (
       x == 0 ||
@@ -45,6 +49,7 @@ class Arena {
     return false;
   }
 
+  // Draw the whole game or an array of tiles to update
   drawArena(tilesArray = this.grid) {
     let currentTile = 0;
     for (currentTile; currentTile < tilesArray.length; currentTile++) {
@@ -92,6 +97,7 @@ class Arena {
     }
   }
 
+  // Get moves next to a given position if they are inside the grid
   getLegalMoves(x, y, returnCollision = true) {
     let possibleMoves = [
       [x + 1, y],
@@ -129,6 +135,7 @@ class Arena {
     return legalMoves;
   }
 
+  // Get a line from a pos and a dir, returning the max tile and line length
   getLineSize(x, y, dir) {
     let lineSize = 0;
     let currentX = x;
@@ -154,10 +161,12 @@ class Arena {
     };
   }
 
+  // Takes two pos and returns a direction that can be used as a set of [x, y] modifiers
   getMoveDirection(x, y, xMove, yMove) {
     return [Math.sign(xMove - x), Math.sign(yMove - y)];
   }
 
+  // Get how many tiles are available after a movement
   getAvailableTilesNumber(x, y) {
     let totalMoves = [];
     let newMoves = this.getLegalMoves(x, y, false);
@@ -201,6 +210,7 @@ class Arena {
     return totalMoves.length;
   }
 
+  // Check if a set of coordinate is valid to play (a collision is valid, but being out of the grid isnt for example)
   isValidMove(x, y) {
     if (
       x * this.gridSize + y >= this.gridSize * this.gridSize ||
@@ -211,6 +221,7 @@ class Arena {
     return true;
   }
 
+  // Check if the current tile will result in a collision with a wall or a player
   checkCollision(x, y, getCollisionType = false) {
     if (
       this.grid[x * this.gridSize + y].content == "Wall" ||
@@ -224,6 +235,13 @@ class Arena {
     }
 
     return false;
+  }
+
+  // Get the distance from a tile to another
+  distanceTo(x, y, xTarget, yTarget) {
+    let distanceTo = x + y - (xTarget + yTarget);
+
+    return Math.abs(distanceTo);
   }
 }
 
@@ -249,14 +267,22 @@ class Bike {
     this.wallColor = wallColor;
   }
 
+  // Initial placement for the cycles, used at the start of a game
   placeBike(x, y, arena) {
     arena.grid[this.x * arena.gridSize + this.y].content = "Player";
     arena.grid[this.x * arena.gridSize + this.y].linkedPlayer = this;
     arena.grid[this.x * arena.gridSize + this.y].color = this.wallColor;
   }
 
-  moveBike(x, y, arena, game) {
+  // Only approved way to move your cycle during a turn
+  moveBike(x, y, arena, game, drawArena = false) {
     if (!arena.isValidMove(x, y)) {
+      game.endGame(true);
+      return;
+    }
+
+    if (arena.distanceTo(this.x, this.y, x, y) > 1) {
+      console.log("Invalid move, tried to move to a too far away tile");
       game.endGame(true);
       return;
     }
@@ -273,10 +299,12 @@ class Bike {
     arena.grid[x * arena.gridSize + y].content = "Player";
     arena.grid[x * arena.gridSize + y].linkedPlayer = this;
     arena.grid[x * arena.gridSize + y].color = this.wallColor;
-    arena.drawArena([
-      arena.grid[this.x * arena.gridSize + this.y],
-      arena.grid[x * arena.gridSize + y]
-    ]);
+    if (drawArena) {
+      arena.drawArena([
+        arena.grid[this.x * arena.gridSize + this.y],
+        arena.grid[x * arena.gridSize + y]
+      ]);
+    }
 
     this.x = x;
     this.y = y;
@@ -295,6 +323,7 @@ class Game {
     this.isOver = false;
   }
 
+  // Switch the player currently playing
   changePlayer() {
     if (this.currentPlayer == this.player1) {
       this.currentPlayer = this.player2;
@@ -304,6 +333,7 @@ class Game {
     this.turn++;
   }
 
+  // Get the player who isn't playing
   getOtherPlayer() {
     if (this.currentPlayer == this.player1) {
       return this.player2;
@@ -312,6 +342,7 @@ class Game {
     }
   }
 
+  // End the game and show scores
   endGame(isCrash = false) {
     let winner = this.getOtherPlayer();
     console.log(winner.name + " has won !");
@@ -328,18 +359,151 @@ class Game {
   }
 }
 
-class Bot {
+class FamahBot {
   constructor(name, linkedBike) {
     this.name = name;
     this.linkedBike = linkedBike;
-    this.targetDir = [0, 0];
+    this.myMatrix = [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
+    this.myMatrix2 = [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 9, 0,
+      0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
   }
-}
-class BotEnemy {
-  constructor(name, linkedBike) {
-    this.name = name;
-    this.linkedBike = linkedBike;
-    this.currentDir = [0, 0];
+
+  getMove(arena, game) {
+    let moves = arena.getLegalMoves(
+      this.linkedBike.x,
+      this.linkedBike.y,
+      false
+    );
+
+    let maxPoints = 0;
+    let goodMoves = [];
+    let enemy = game.getOtherPlayer().linkedBike;
+
+    for (let allmoves = 0; allmoves < moves.length; allmoves++) {
+      let accessmove = arena.getAvailableTilesNumber(
+        moves[allmoves].xMove,
+        moves[allmoves].yMove
+      );
+      accessmove +=
+        this.myMatrix[moves[allmoves].xMove + moves[allmoves].yMove * 20];
+      let enemyScore = this.prediction(
+        arena,
+        game,
+        this.linkedBike,
+        enemy,
+        moves[allmoves].xMove,
+        moves[allmoves].yMove
+      );
+
+      let totalPoints = accessmove - enemyScore;
+
+      if (accessmove > maxPoints) {
+        maxPoints = accessmove;
+        goodMoves = [[moves[allmoves].xMove, moves[allmoves].yMove]];
+      }
+
+      if (totalPoints > maxPoints) {
+        maxPoints = totalPoints;
+        goodMoves = [[moves[allmoves].xMove, moves[allmoves].yMove]];
+      } else if (totalPoints == maxPoints) {
+        goodMoves.push([moves[allmoves].xMove, moves[allmoves].yMove]);
+      }
+    }
+
+    if (goodMoves.length > 0) {
+      let randomMove = goodMoves[Math.floor(Math.random() * goodMoves.length)];
+
+      return [randomMove[0], randomMove[1]];
+    }
+    return [this.linkedBike.x, this.linkedBike.y];
+  }
+
+  prediction(arena, game, player, enemy, x, y) {
+    console.log(arena);
+    let cloneArena = arena;
+    let cloneGame = new Game(bot1, bot2, bot1);
+    let clonePlayer = new Bike(
+      1,
+      1,
+      3,
+      3,
+      "rgb(15, 28, 125)",
+      "rgb(29, 10, 82)"
+    );
+    let cloneEnemy = new Bike(
+      currentArena.gridSize - 2,
+      currentArena.gridSize - 2,
+      3,
+      3,
+      "rgb(161, 18, 32)",
+      "rgb(110, 19, 44)"
+    );
+
+    cloneArena = structuredClone(arena);
+    cloneGame = structuredClone(game);
+    clonePlayer = structuredClone(player);
+    cloneEnemy = structuredClone(enemy);
+
+    cloneArena = Object.setPrototypeOf(cloneArena, Arena.prototype);
+    cloneGame = Object.setPrototypeOf(cloneGame, Game.prototype);
+    clonePlayer = Object.setPrototypeOf(clonePlayer, Bike.prototype);
+    cloneEnemy = Object.setPrototypeOf(cloneEnemy, Bike.prototype);
+
+    clonePlayer.moveBike(x, y, cloneArena, cloneGame, false);
+
+    let enemyMoves = cloneArena.getLegalMoves(
+      cloneEnemy.x,
+      cloneEnemy.y,
+      false
+    );
+    if (enemyMoves.length === 0) {
+      return 0;
+    }
+
+    let maxEnemyScore = 0;
+    for (let move = 0; move < enemyMoves.length; move++) {
+      let score = cloneArena.getAvailableTilesNumber(
+        enemyMoves[move].xMove,
+        enemyMoves[move].yMove
+      );
+      if (score > maxEnemyScore) {
+        maxEnemyScore = score;
+      }
+    }
+    return maxEnemyScore;
   }
 }
 
@@ -361,68 +525,30 @@ player1.placeBike(player1.x, player1.y, currentArena);
 player2.placeBike(player2.x, player2.y, currentArena);
 
 bot1 = new Bot("Blue", player1);
-bot2 = new BotEnemy("Red", player2);
+bot2 = new Bot("Red", player2);
 
 currentArena.drawArena();
 
 // Game Loop
 currentGame = new Game(bot1, bot2, bot1);
 
-// Manual Controls
-document.addEventListener("keydown", event => {
-  if (event.repeat || currentGame.isOver) return;
-  switch (event.key) {
-    case "ArrowRight":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x + 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowLeft":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x - 1,
-        currentGame.currentPlayer.linkedBike.y,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowDown":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y + 1,
-        currentArena,
-        currentGame
-      );
-      break;
-    case "ArrowUp":
-      currentGame.currentPlayer.linkedBike.moveBike(
-        currentGame.currentPlayer.linkedBike.x,
-        currentGame.currentPlayer.linkedBike.y - 1,
-        currentArena,
-        currentGame
-      );
-      break;
+function gameLoop() {
+  if (!currentGame.isOver) {
+    let moveCoordinates = [];
+    moveCoordinates = currentGame.currentPlayer.getMove(
+      currentArena,
+      currentGame
+    );
+
+    currentGame.currentPlayer.linkedBike.moveBike(
+      moveCoordinates[0],
+      moveCoordinates[1],
+      currentArena,
+      currentGame,
+      true
+    );
   }
-});
-
-// function gameLoop() {
-//   if (!currentGame.isOver) {
-//     let moveCoordinates = [];
-//     moveCoordinates = currentGame.currentPlayer.getMove(
-//       currentArena,
-//       currentGame
-//     );
-
-//     currentGame.currentPlayer.linkedBike.moveBike(
-//       moveCoordinates[0],
-//       moveCoordinates[1],
-//       currentArena,
-//       currentGame
-//     );
-//   }
-//   window.requestAnimationFrame(gameLoop);
-// }
+  window.requestAnimationFrame(gameLoop);
+}
 
 gameLoop();
